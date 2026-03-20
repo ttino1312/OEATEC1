@@ -1,20 +1,22 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './pages/**/*.{js,ts,jsx,tsx}',
-    './components/**/*.{js,ts,jsx,tsx}',
+    './src/pages/**/*.{js,ts,jsx,tsx}',
+    './src/components/**/*.{js,ts,jsx,tsx}',
+    './src/lib/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
       colors: {
-        c100: '#E4E4E5',
-        c200: '#BEBEBE',
-        c300: '#949494',
-        c400: '#7A7A7A',
-        c500: '#545454',
-        c600: '#3C3C3C',
-        paper: '#FAFAFA',
+        c100:    '#E4E4E5',
+        c200:    '#BEBEBE',
+        c300:    '#949494',
+        c400:    '#7A7A7A',
+        c500:    '#545454',
+        c600:    '#3C3C3C',
+        paper:   '#FAFAFA',
         surface: '#FFFFFF',
+        ink:     '#1A1A1A',
       },
       fontFamily: {
         display: ['"Playfair Display"', 'Georgia', 'serif'],
@@ -27,4 +29,4 @@ module.exports = {
     },
   },
   plugins: [],
-}
+};

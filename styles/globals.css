@@ -15,8 +15,13 @@
   --paper: #FAFAFA;
   --surface: #FFFFFF;
 
-  --nav-w:    240px;   /* desktop sidebar width */
-  --player-h: 68px;    /* bottom player height  */
+  /* aliases usados en componentes */
+  --ink:    #1A1A1A;
+  --muted:  #7A7A7A;
+  --border: #E4E4E5;
+
+  --nav-w:    240px;
+  --player-h: 68px;
 }
 
 /* ── Base ─────────────────────────────────────────────── */
@@ -39,32 +44,30 @@ body {
   min-height: 100vh;
 }
 
-/* Sidebar — only visible on lg+ */
 .sidebar {
   width: var(--nav-w);
   flex-shrink: 0;
   position: fixed;
-  left: 0; top: 0;
+  left: 0;
+  top: 0;
   height: 100vh;
   z-index: 40;
-  display: none; /* hidden mobile */
+  display: none;
   flex-direction: column;
   background: var(--surface);
   border-right: 1px solid var(--c100);
   overflow-y: auto;
 }
 
-@media (min-width: 1024px) {
-  .sidebar { display: flex; }
-  .main-content {
-    margin-left: var(--nav-w);
-  }
-}
-
 .main-content {
   flex: 1;
   min-width: 0;
   padding-bottom: var(--player-h);
+}
+
+@media (min-width: 1024px) {
+  .sidebar { display: flex; }
+  .main-content { margin-left: var(--nav-w); }
 }
 
 /* ── Mobile topbar ───────────────────────────────────── */
@@ -80,6 +83,7 @@ body {
   top: 0;
   z-index: 30;
 }
+
 @media (min-width: 1024px) {
   .topbar { display: none; }
 }
@@ -95,7 +99,8 @@ body {
 
 .drawer {
   position: fixed;
-  left: 0; top: 0;
+  left: 0;
+  top: 0;
   width: min(var(--nav-w), 85vw);
   height: 100vh;
   background: var(--surface);
@@ -108,7 +113,9 @@ body {
 /* ── Bottom player ───────────────────────────────────── */
 .player-bar {
   position: fixed;
-  bottom: 0; left: 0; right: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   height: var(--player-h);
   background: var(--c600);
   color: var(--c100);
@@ -116,6 +123,7 @@ body {
   display: flex;
   align-items: center;
 }
+
 @media (min-width: 1024px) {
   .player-bar { left: var(--nav-w); }
 }
@@ -127,25 +135,46 @@ body {
 
 /* ── Animations ─────────────────────────────────────── */
 @keyframes live-blink {
-  0%,100% { opacity: 1; }
-  50%      { opacity: 0.3; }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
 }
+
 .live-dot { animation: live-blink 1.8s ease-in-out infinite; }
 
 @keyframes marquee-scroll {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
-.marquee-inner { display: flex; width: max-content; animation: marquee-scroll 26s linear infinite; }
+
+.marquee-inner {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 26s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
 
 /* ── Range input ─────────────────────────────────────── */
 input[type="range"] {
-  -webkit-appearance: none; appearance: none;
-  height: 2px; background: rgba(255,255,255,0.25); border-radius: 99px; outline: none; cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 2px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 99px;
+  outline: none;
+  cursor: pointer;
 }
+
 input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 10px; height: 10px;
-  border-radius: 50%; background: white; cursor: pointer;
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
 }
 
 /* ── Typography helpers ──────────────────────────────── */
@@ -157,10 +186,12 @@ input[type="range"]::-webkit-slider-thumb {
   background: var(--surface);
   border: 1px solid var(--c100);
   border-radius: 16px;
-  transition: transform 0.22s cubic-bezier(.34,1.56,.64,1),
-              box-shadow 0.22s ease,
-              border-color 0.2s ease;
+  transition:
+    transform    0.22s cubic-bezier(.34,1.56,.64,1),
+    box-shadow   0.22s ease,
+    border-color 0.2s ease;
 }
+
 .card:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 32px rgba(60,60,60,0.08);
@@ -168,42 +199,19 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 /* ── Section padding ─────────────────────────────────── */
-.section-px { padding-left: clamp(1.25rem, 5vw, 4rem); padding-right: clamp(1.25rem, 5vw, 4rem); }
-.section-py { padding-top: clamp(3rem, 8vw, 6rem); padding-bottom: clamp(3rem, 8vw, 6rem); }
+.section-px {
+  padding-left:  clamp(1.25rem, 5vw, 4rem);
+  padding-right: clamp(1.25rem, 5vw, 4rem);
+}
+.section-py {
+  padding-top:    clamp(3rem, 8vw, 6rem);
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
 
 /* ── Divider ─────────────────────────────────────────── */
 .divider { height: 1px; background: var(--c100); }
 
-/* ── Mobile: extra bottom padding for floating pill ─── */
+/* ── Mobile: espacio para el player flotante ─────────── */
 @media (max-width: 1023px) {
-  .main-content {
-    padding-bottom: 5.5rem; /* space for floating pill */
-  }
-}
-
-/* ── Desktop: player bar correct position ─────────── */
-@media (min-width: 1024px) {
-  .player-bar {
-    left: var(--nav-w);
-  }
-}
-
-/* spin for loader */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-/* Ensure topbar pushes content down properly on mobile */
-@media (max-width: 1023px) {
-  .main-content {
-    /* account for topbar height */
-  }
-}
-
-/* prevent hero from going under topbar on mobile */
-@media (max-width: 1023px) {
-  section:first-of-type {
-    /* topbar is sticky so sections start below it naturally */
-  }
+  .main-content { padding-bottom: 5.5rem; }
 }

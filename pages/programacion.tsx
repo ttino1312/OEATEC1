@@ -134,7 +134,8 @@ export default function Programacion({ shows }: Props) {
                         <div className="flex items-center gap-1.5 mb-2">
                           <Mic size={11} style={{ color: 'var(--muted)' }} />
                           <p className="text-xs" style={{ color: 'var(--muted)' }}>
-                            {show.presenter_names.join(', ')}
+                            {show.presenter_names?.join(', ')}
+
                           </p>
                         </div>
                       ) : null}

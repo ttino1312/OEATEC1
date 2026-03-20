@@ -20,20 +20,27 @@ export default function Podcast({ episodes, shows }: Props) {
   const filtered = filter ? episodes.filter(e => e.show_id === filter) : episodes;
 
   const playEp = (ep: Recording) => {
-    if (playing?.id === ep.id) {
-      if (isPlaying) { audioRef.current?.pause(); setIsPlaying(false); }
-      else           { audioRef.current?.play();  setIsPlaying(true); }
-      return;
+  if (playing?.id === ep.id) {
+    if (isPlaying) {
+      audioRef.current?.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current?.play();
+      setIsPlaying(true);
     }
-    audioRef.current?.pause();
-    const audio = new Audio(ep.file_url);
-    audio.volume = 0.85;
-    audio.onended = () => setIsPlaying(false);
-    audio.play().catch(() => {});
-    audioRef.current = audio;
-    setPlaying({ id: ep.id, url: ep.file_url, title: ep.title });
-    setIsPlaying(true);
-  };
+    return;
+  }  // ← esta llave de cierre faltaba
+
+  // código que reproducía un nuevo episodio — antes era inalcanzable
+  audioRef.current?.pause();
+  const audio = new Audio(ep.file_url);
+  audio.volume = 0.85;
+  audio.onended = () => setIsPlaying(false);
+  audio.play().catch(() => {});
+  audioRef.current = audio as unknown as HTMLAudioElement;
+  setPlaying({ id: ep.id, url: ep.file_url, title: ep.title });
+  setIsPlaying(true);
+};
 
   const closePlayer = () => {
     audioRef.current?.pause();
