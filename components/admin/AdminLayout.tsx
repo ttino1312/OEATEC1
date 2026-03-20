@@ -1,120 +1,120 @@
-// components/admin/AdminLayout.tsx
 import { ReactNode, useState } from 'react';
-import { useRouter } from 'next/router';
 import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { Radio, CalendarDays, Mic2, AudioLines, Settings, LogOut, ExternalLink } from 'lucide-react';
+import { useRouter } from 'next/router';
+import {
+  Radio, LayoutDashboard, Calendar, Mic2, FileAudio,
+  Settings, LogOut, Menu, X
+} from 'lucide-react';
 
-const ADMIN_NAV = [
-  { href: '/admin',             icon: Radio,        label: 'En vivo' },
-  { href: '/admin/programacion',icon: CalendarDays, label: 'Programación' },
-  { href: '/admin/presentadores',icon: Mic2,        label: 'Presentadores' },
-  { href: '/admin/grabaciones', icon: AudioLines,   label: 'Grabaciones' },
-  { href: '/admin/configuracion',icon: Settings,    label: 'Configuración' },
+const NAV = [
+  { href: '/admin',                label: 'Dashboard',      icon: LayoutDashboard },
+  { href: '/admin/programacion',   label: 'Programación',   icon: Calendar },
+  { href: '/admin/presentadores',  label: 'Presentadores',  icon: Mic2 },
+  { href: '/admin/grabaciones',    label: 'Grabaciones',    icon: FileAudio },
+  { href: '/admin/configuracion',  label: 'Configuración',  icon: Settings },
 ];
 
-interface Props { children: ReactNode; title?: string; }
-
-export default function AdminLayout({ children, title = 'Admin' }: Props) {
+function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const router = useRouter();
 
   const logout = async () => {
-    await fetch('/api/auth/index.php', { method: 'DELETE' });
+    await fetch('/api/auth/index.php', { method: 'DELETE' }).catch(() => {});
     router.push('/admin/login');
   };
 
   return (
-    <div className="flex min-h-screen" style={{ background: '#F0EFEb', fontFamily: 'Plus Jakarta Sans, system-ui' }}>
-
-      {/* Sidebar */}
-      <aside className="w-56 flex-shrink-0 flex flex-col"
-        style={{
-          background: 'var(--ink)', color: 'var(--paper)',
-          position: 'sticky', top: 0, height: '100vh', overflowY: 'auto',
-        }}>
-
-        {/* Logo */}
-        <div className="px-5 pt-6 pb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <div className="flex items-center gap-3">
-            <Image src="/logo.png" alt="Logo" width={30} height={30}
-              className="rounded-full" style={{ filter: 'invert(1) brightness(0.85)' }} />
-            <div>
-              <p className="text-xs font-semibold leading-none" style={{ color: 'var(--paper)' }}>
-                Radio T1
-              </p>
-              <p className="text-xs mt-0.5" style={{ color: 'rgba(248,247,244,0.4)', fontSize: '0.65rem' }}>
-                Panel Admin
-              </p>
-            </div>
-          </div>
+    <div className="flex flex-col h-full py-6 px-3">
+      {/* Logo */}
+      <div className="px-3 mb-8 flex items-center gap-2.5">
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ background: 'var(--c600)' }}
+        >
+          <Radio size={14} color="#fff" strokeWidth={2} />
         </div>
+        <div>
+          <div className="text-xs font-bold" style={{ color: 'var(--ink)' }}>RADIO T1</div>
+          <div className="text-[10px]" style={{ color: 'var(--muted)' }}>Panel Admin</div>
+        </div>
+      </div>
 
-        {/* Nav */}
-        <nav className="flex-1 py-4 px-3">
-          <p className="px-2 mb-2 text-xs font-semibold uppercase tracking-widest"
-            style={{ color: 'rgba(248,247,244,0.3)', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem' }}>
-            Gestión
-          </p>
-          {ADMIN_NAV.map(item => {
-            const Icon = item.icon;
-            const active = router.pathname === item.href;
-            return (
-              <Link key={item.href} href={item.href}>
-                <motion.div
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl mb-0.5 text-sm font-medium cursor-pointer"
-                  style={{
-                    background: active ? 'rgba(255,255,255,0.1)' : 'transparent',
-                    color:      active ? 'var(--paper)'           : 'rgba(248,247,244,0.5)',
-                  }}
-                  whileHover={{ background: 'rgba(255,255,255,0.07)', color: 'var(--paper)' }}
-                >
-                  <Icon size={14} strokeWidth={active ? 2 : 1.75} />
-                  {item.label}
-                  {active && (
-                    <motion.div layoutId="admin-active-dot"
-                      className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
-                      style={{ background: 'var(--gold)' }}
-                    />
-                  )}
-                </motion.div>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Footer */}
-        <div className="px-3 pb-5" style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '1rem' }}>
-          <a href="/" target="_blank">
-            <motion.div
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs mb-1 cursor-pointer"
-              style={{ color: 'rgba(248,247,244,0.4)' }}
-              whileHover={{ color: 'var(--paper)' }}
+      {/* Nav */}
+      <nav className="flex flex-col gap-0.5 flex-1">
+        {NAV.map(({ href, label, icon: Icon }) => {
+          const active = router.pathname === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={onLinkClick}
+              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+              style={{
+                background: active ? 'var(--c600)' : 'transparent',
+                color: active ? '#fff' : 'var(--c400)',
+              }}
             >
-              <ExternalLink size={12} /> Ver sitio
-            </motion.div>
-          </a>
-          <motion.button onClick={logout}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs cursor-pointer"
-            style={{ color: 'rgba(248,247,244,0.4)' }}
-            whileHover={{ color: '#ff8080' }}
-          >
-            <LogOut size={12} /> Cerrar sesión
-          </motion.button>
-        </div>
+              <Icon size={17} strokeWidth={active ? 2.2 : 1.8} />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Logout */}
+      <div className="pt-4 border-t" style={{ borderColor: 'var(--c100)' }}>
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all duration-200"
+          style={{ color: 'var(--c400)' }}
+        >
+          <LogOut size={17} strokeWidth={1.8} />
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function AdminLayout({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="layout-wrapper">
+      {/* Desktop sidebar */}
+      <aside className="sidebar">
+        <SidebarContent />
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="px-8 py-8 max-w-5xl">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            {children}
-          </motion.div>
+      {/* Mobile topbar */}
+      <header className="topbar lg:hidden">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: 'var(--c600)' }}>
+            <Radio size={13} color="#fff" />
+          </div>
+          <span className="text-xs font-bold" style={{ color: 'var(--ink)' }}>Admin</span>
         </div>
+        <button onClick={() => setOpen(true)} className="p-1.5" style={{ color: 'var(--c500)' }}>
+          <Menu size={20} />
+        </button>
+      </header>
+
+      {/* Mobile drawer */}
+      {open && (
+        <>
+          <div className="drawer-overlay lg:hidden" onClick={() => setOpen(false)} />
+          <div className="drawer lg:hidden">
+            <div className="flex justify-end p-3">
+              <button onClick={() => setOpen(false)} style={{ color: 'var(--c400)' }}>
+                <X size={18} />
+              </button>
+            </div>
+            <SidebarContent onLinkClick={() => setOpen(false)} />
+          </div>
+        </>
+      )}
+
+      <main className="main-content">
+        {children}
       </main>
     </div>
   );

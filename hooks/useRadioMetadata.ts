@@ -1,113 +1,95 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
-export interface RadioMetadata {
-  title: string; artist: string; show: string;
-  cover: string; listeners: number; live: boolean;
-  presenter?: string; streamUrl?: string;
+export interface RadioMeta {
+  live: boolean;
+  listeners: number;
+  title: string;
+  artist: string;
+  show: string;
+  presenter?: string;
 }
 
-const DEFAULT: RadioMetadata = {
-  title: 'Radio Técnica Uno', artist: '', show: '',
-  cover: '/logo.png', listeners: 0, live: false,
+const DEFAULT: RadioMeta = {
+  live: false, listeners: 0, title: 'Radio Técnica Uno', artist: '', show: '',
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || '';
+export function useRadioMetadata(intervalMs = 10000): RadioMeta {
+  const [meta, setMeta] = useState<RadioMeta>(DEFAULT);
 
-export function useRadioMetadata(pollMs = 12000) {
-  const [meta, setMeta] = useState<RadioMetadata>(DEFAULT);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
-  const failsRef = useRef(0);
+  const fetch_ = useCallback(async () => {
+    try {
+      const res = await fetch('/api/radio/metadata.php', { cache: 'no-store' });
+      if (res.ok) {
+        const d = await res.json();
+        setMeta({
+          live:      d.live      ?? false,
+          listeners: d.listeners ?? 0,
+          title:     d.title     ?? 'Radio Técnica Uno',
+          artist:    d.artist    ?? '',
+          show:      d.show      ?? '',
+          presenter: d.presenter ?? '',
+        });
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    async function poll() {
-      try {
-        const ctrl = new AbortController();
-        const tid  = setTimeout(() => ctrl.abort(), 5000);
-        const res  = await fetch(`${API_BASE}/api/radio/metadata.php`, {
-          cache: 'no-store', signal: ctrl.signal,
-        });
-        clearTimeout(tid);
-        if (res.ok && !cancelled) {
-          const data = await res.json();
-          setMeta(prev => ({ ...prev, ...data }));
-          failsRef.current = 0;
-        } else failsRef.current++;
-      } catch { failsRef.current++; }
-      if (!cancelled) {
-        const delay = Math.min(60000, pollMs * Math.pow(2, Math.min(failsRef.current, 3)));
-        timerRef.current = setTimeout(poll, delay);
-      }
-    }
-    poll();
-    return () => { cancelled = true; clearTimeout(timerRef.current); };
-  }, [pollMs]);
+    fetch_();
+    const id = setInterval(fetch_, intervalMs);
+    return () => clearInterval(id);
+  }, [fetch_, intervalMs]);
 
   return meta;
 }
 
-// ── Fetches stream URL from PHP settings on mount ──────────────────────
 export function useStreamUrl(): string {
-  const envUrl = process.env.NEXT_PUBLIC_STREAM_URL || '';
-  const [url, setUrl] = useState(envUrl);
+  const [url, setUrl] = useState('');
 
   useEffect(() => {
-    if (envUrl) return; // env var takes priority
-    const API_BASE_LOCAL = process.env.NEXT_PUBLIC_API_BASE || '';
-    fetch(`${API_BASE_LOCAL}/api/radio/status.php`, { cache: 'no-store' })
+    fetch('/api/radio/status.php')
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d?.streamUrl) setUrl(d.streamUrl); })
       .catch(() => {});
-  }, [envUrl]);
+  }, []);
 
-  return url;
+  return url || (process.env.NEXT_PUBLIC_STREAM_URL ?? '');
 }
 
-// ── Audio player — pause-safe, no ghost reconnections ─────────────────
 export function useAudioPlayer(streamUrl: string) {
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [volume, setVolume]   = useState(0.8);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const volRef   = useRef(0.8);
 
-  const getAudio = (): HTMLAudioElement => {
-    if (audioRef.current) return audioRef.current;
-    const a = new Audio();
-    a.preload = 'none';
-    a.volume  = volRef.current;
-    a.addEventListener('playing', () => { setPlaying(true);  setLoading(false); });
-    a.addEventListener('waiting', () => setLoading(true));
-    a.addEventListener('canplay', () => setLoading(false));
-    a.addEventListener('pause',   () => { setPlaying(false); setLoading(false); });
-    a.addEventListener('error',   () => { setPlaying(false); setLoading(false); });
-    audioRef.current = a;
-    return a;
-  };
+  const toggle = useCallback(async () => {
+    if (!streamUrl) return;
 
-  useEffect(() => () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = '';
-      audioRef.current = null;
+    if (playing) {
+      audioRef.current?.pause();
+      setPlaying(false);
+      return;
     }
+
+    setLoading(true);
+    try {
+      if (!audioRef.current) {
+        audioRef.current = new Audio(streamUrl);
+        audioRef.current.volume = 0.85;
+        audioRef.current.onerror = () => { setPlaying(false); setLoading(false); };
+        audioRef.current.onwaiting = () => setLoading(true);
+        audioRef.current.oncanplay  = () => setLoading(false);
+      }
+      await audioRef.current.play();
+      setPlaying(true);
+    } catch {
+      setPlaying(false);
+    } finally {
+      setLoading(false);
+    }
+  }, [streamUrl, playing]);
+
+  useEffect(() => {
+    return () => { audioRef.current?.pause(); };
   }, []);
 
-  const play = async () => {
-    if (!streamUrl) return;
-    setLoading(true);
-    const a = getAudio();
-    if (a.networkState === 0 /* NETWORK_EMPTY */ || !a.src) a.src = streamUrl;
-    try { await a.play(); }
-    catch (e) { console.warn('play blocked:', e); setLoading(false); }
-  };
-
-  const pause = () => { audioRef.current?.pause(); };
-  const toggle = () => (playing ? pause() : play());
-  const changeVolume = (v: number) => {
-    volRef.current = v; setVolume(v);
-    if (audioRef.current) audioRef.current.volume = v;
-  };
-
-  return { playing, loading, volume, toggle, play, pause, changeVolume };
+  return { playing, loading, toggle };
 }

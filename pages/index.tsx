@@ -1,7 +1,6 @@
 // pages/index.tsx
 import Head from 'next/head';
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Headphones, CalendarDays, Play, Pause, Loader2 } from 'lucide-react';
 import { Reveal, StaggerReveal, staggerItem } from '../components/Reveal';
@@ -17,7 +16,6 @@ const todayShows = (shows: Show[]) => {
   return shows.filter(s => s.days?.includes(day) && s.active).slice(0, 4);
 };
 
-// ── Hero player pill ──────────────────────────────────────────────────
 function HeroPlayer() {
   const meta      = useRadioMetadata(12000);
   const streamUrl = useStreamUrl();
@@ -90,7 +88,10 @@ function HeroPlayer() {
         </div>
 
         {meta.live && (
-          <span className="live-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgb(228,228,229)', flexShrink: 0, marginLeft: 2 }} />
+          <span className="live-dot" style={{
+            width: 6, height: 6, borderRadius: '50%',
+            background: 'rgb(228,228,229)', flexShrink: 0, marginLeft: 2,
+          }} />
         )}
       </motion.div>
 
@@ -101,19 +102,11 @@ function HeroPlayer() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             style={{
-              position: 'absolute',
-              top: 'calc(100% + 8px)',
-              left: 0,
-              background: 'rgb(60,60,60)',
-              color: 'rgb(228,228,229)',
-              fontSize: '0.72rem',
-              padding: '0.5rem 0.875rem',
-              borderRadius: 10,
-              fontFamily: 'IBM Plex Mono, monospace',
-              lineHeight: 1.5,
-              zIndex: 10,
-              maxWidth: '90vw',
-              whiteSpace: 'pre-wrap' // ✅ FIX
+              position: 'absolute', top: 'calc(100% + 8px)', left: 0,
+              background: 'rgb(60,60,60)', color: 'rgb(228,228,229)',
+              fontSize: '0.72rem', padding: '0.5rem 0.875rem',
+              borderRadius: 10, fontFamily: 'IBM Plex Mono, monospace',
+              lineHeight: 1.5, zIndex: 10, maxWidth: '90vw', whiteSpace: 'pre-wrap',
             }}
           >
             Stream no configurado aún.{'\n'}
@@ -130,8 +123,158 @@ export default function Home({ shows, episodes }: HomeProps) {
 
   return (
     <>
-      <Head><title>Radio Técnica Uno — EEST N°1 "OEA"</title></Head>
-      {/* resto igual (no cambia nada) */}
+      <Head>
+        <title>Radio Técnica Uno — EEST N°1 &quot;OEA&quot;</title>
+        <meta name="description" content="La radio de la Escuela de Educación Secundaria Técnica N°1 OEA. Programas, podcasts y música hecha por estudiantes." />
+      </Head>
+
+      {/* Hero */}
+      <section className="section-px min-h-[85vh] flex flex-col justify-center" style={{ borderBottom: '1px solid var(--c100)' }}>
+        <motion.p
+          className="mono text-xs mb-5 tracking-widest uppercase"
+          style={{ color: 'var(--c300)' }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
+        >
+          EEST N°1 &quot;OEA&quot; · Hurlingham, BA
+        </motion.p>
+
+        <motion.h1
+          className="display font-bold leading-none mb-6"
+          style={{ fontSize: 'clamp(3.5rem, 10vw, 7rem)', color: 'var(--ink)' }}
+          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+        >
+          Radio<br /><em>Técnica</em><br />Uno
+        </motion.h1>
+
+        <motion.p
+          className="text-base max-w-md mb-2 leading-relaxed"
+          style={{ color: 'var(--c400)' }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
+        >
+          La radio de la Escuela de Educación Secundaria Técnica N°1.
+          Programas, podcasts y música hecha por estudiantes.
+        </motion.p>
+
+        <HeroPlayer />
+
+        <motion.div
+          className="flex gap-3 flex-wrap mt-6"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
+        >
+          <Link
+            href="/programacion"
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm border transition-all duration-200"
+            style={{ borderColor: 'var(--c200)', color: 'var(--c500)' }}
+          >
+            <CalendarDays size={14} /> Programación
+          </Link>
+          <Link
+            href="/podcast"
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm border transition-all duration-200"
+            style={{ borderColor: 'var(--c200)', color: 'var(--c500)' }}
+          >
+            <Headphones size={14} /> Podcast
+          </Link>
+        </motion.div>
+      </section>
+
+      {/* Programas de hoy */}
+      {today.length > 0 && (
+        <section className="section-px section-py">
+          <Reveal>
+            <p className="mono text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--c300)' }}>Hoy en la radio</p>
+            <h2 className="display text-2xl font-bold mb-8" style={{ color: 'var(--ink)' }}>Próximos programas</h2>
+          </Reveal>
+          <StaggerReveal className="flex flex-col gap-3">
+            {today.map(show => (
+              <motion.div key={show.id} variants={staggerItem} className="card flex items-center gap-4 px-5 py-4">
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm truncate" style={{ color: 'var(--ink)' }}>{show.title}</p>
+                  {show.presenter_names && show.presenter_names.length > 0 && (
+                    <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--muted)' }}>
+                      {show.presenter_names.join(', ')}
+                    </p>
+                  )}
+                </div>
+                <span className="mono text-xs flex-shrink-0" style={{ color: 'var(--c400)' }}>
+                  {show.start_time?.slice(0, 5)} – {show.end_time?.slice(0, 5)}
+                </span>
+              </motion.div>
+            ))}
+          </StaggerReveal>
+          <Reveal delay={0.2}>
+            <Link href="/programacion" className="inline-flex items-center gap-2 mt-6 text-sm" style={{ color: 'var(--c400)' }}>
+              Ver programación completa <ArrowRight size={14} />
+            </Link>
+          </Reveal>
+        </section>
+      )}
+
+      {/* Últimos episodios */}
+      {episodes.length > 0 && (
+        <section className="section-px section-py" style={{ borderTop: '1px solid var(--c100)' }}>
+          <Reveal>
+            <p className="mono text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--c300)' }}>Escuchá cuando quieras</p>
+            <h2 className="display text-2xl font-bold mb-8" style={{ color: 'var(--ink)' }}>Últimos episodios</h2>
+          </Reveal>
+          <StaggerReveal className="flex flex-col gap-3">
+            {episodes.slice(0, 3).map(ep => (
+              <motion.div key={ep.id} variants={staggerItem} className="card flex items-center gap-4 px-5 py-4">
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm truncate" style={{ color: 'var(--ink)' }}>{ep.title}</p>
+                  {ep.show_title && (
+                    <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--muted)' }}>{ep.show_title}</p>
+                  )}
+                </div>
+                {ep.duration_sec > 0 && (
+                  <span className="mono text-xs flex-shrink-0" style={{ color: 'var(--c400)' }}>
+                    {formatDuration(ep.duration_sec)}
+                  </span>
+                )}
+              </motion.div>
+            ))}
+          </StaggerReveal>
+          <Reveal delay={0.2}>
+            <Link href="/podcast" className="inline-flex items-center gap-2 mt-6 text-sm" style={{ color: 'var(--c400)' }}>
+              Ver todos los episodios <ArrowRight size={14} />
+            </Link>
+          </Reveal>
+        </section>
+      )}
+
+      {/* Sobre la escuela */}
+      <section className="section-px section-py" style={{ borderTop: '1px solid var(--c100)' }}>
+        <Reveal>
+          <p className="mono text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--c300)' }}>La institución</p>
+          <h2 className="display text-2xl font-bold mb-4" style={{ color: 'var(--ink)' }}>EEST N°1 &quot;OEA&quot;</h2>
+          <p className="text-sm leading-relaxed max-w-lg mb-6" style={{ color: 'var(--c400)' }}>
+            Escuela de Educación Secundaria Técnica N°1 &quot;Organización de los Estados Americanos&quot;.
+            Especialidad Técnico en Programación. Hurlingham, Buenos Aires.
+          </p>
+          <Link
+            href="/institucional"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm border transition-all duration-200"
+            style={{ borderColor: 'var(--c200)', color: 'var(--c500)' }}
+          >
+            Conocé la escuela <ArrowRight size={14} />
+          </Link>
+        </Reveal>
+      </section>
+
+      {/* Footer */}
+      <footer
+        className="section-px py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        style={{ borderTop: '1px solid var(--c100)' }}
+      >
+        <span className="mono text-xs" style={{ color: 'var(--c300)' }}>
+          © 2026 Radio Técnica Uno · EEST N°1 &quot;OEA&quot;
+        </span>
+        <div className="flex gap-4">
+          <Link href="/privacidad" className="mono text-xs hover:underline" style={{ color: 'var(--c300)' }}>Privacidad</Link>
+          <Link href="/contacto"   className="mono text-xs hover:underline" style={{ color: 'var(--c300)' }}>Contacto</Link>
+        </div>
+      </footer>
     </>
   );
 }
